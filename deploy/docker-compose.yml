@@ -993,12 +993,25 @@ services:
       retries: 3
       start_period: 30s
     <<: *logging-config
+  
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka-exporter
+    command:
+      - --kafka.server=kafka:9092
+    ports:
+      - "9308:9308"
+    networks:
+      - appwrite
+    depends_on:
+      - kafka
+    <<: *logging-config
 
   violations-engine:
     build: 
-      context: ../../services/violations-engine
+      context: ../../services/test-service
       dockerfile: Dockerfile
-    container_name: violations-engine
+    container_name: test-service
     <<: *logging-config
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
@@ -1015,8 +1028,8 @@ services:
     networks:
       - appwrite
     depends_on:
-      # kafka:
-      #   condition: service_healthy
+      kafka:
+        condition: service_healthy
       elasticsearch:
         condition: service_healthy
       prometheus:
